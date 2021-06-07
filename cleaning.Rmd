@@ -1,0 +1,198 @@
+---
+title: 'Visualització de Dades - PRA2'
+author: "Autor: Javier Beltran Lou"
+date: "Juny de 2021"
+output:
+  html_document:
+    highlight: default
+    number_sections: no
+    theme: cosmo
+    toc: yes
+    toc_depth: 1
+    includes:
+      in_header: common_header.html
+  pdf_document:
+    highlight: zenburn
+    toc: yes
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Carreguem els paquets R que utilitzarem
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(caret)
+```
+
+Carregar el CSV original
+
+```{r}
+
+options(max.print=100000)
+
+# V4
+# ds <- read.csv('pax_data_1868_agreements_19-04-21.csv')
+# V3
+ds <- read.csv('../survey_results_public.csv')
+# str(ds)
+
+# summary(ds)
+```
+
+
+Veiem que hi ha moltes variables. No totes seran d'utilitat a la visualització final.
+Moltes de les variables tenen molts NAs. Però com que la cardinalitat del conjunt és generosa, i no volem treballar amb nombres absoluts,
+la idea és eliminar registres amb NAs. 
+
+## Pas 1. Eliminar variables que no es consideren útils
+
+```{r}
+
+ds$Respondent<-NULL
+ds$UndergradMajor<-NULL
+
+ds$UndergradMajor<-NULL
+
+# Camps que d'alguna forma semblen tenir relació amb la borsa de treball de StackOverflow
+ds$AssessJob1<-NULL
+ds$AssessJob2<-NULL
+ds$AssessJob3<-NULL
+ds$AssessJob4<-NULL
+ds$AssessJob5<-NULL
+ds$AssessJob6<-NULL
+ds$AssessJob7<-NULL
+ds$AssessJob8<-NULL
+ds$AssessJob9<-NULL
+ds$AssessJob10<-NULL
+ds$AssessBenefits1<-NULL
+ds$AssessBenefits2<-NULL
+ds$AssessBenefits3<-NULL
+ds$AssessBenefits4<-NULL
+ds$AssessBenefits5<-NULL
+ds$AssessBenefits6<-NULL
+ds$AssessBenefits7<-NULL
+ds$AssessBenefits8<-NULL
+ds$AssessBenefits9<-NULL
+ds$AssessBenefits10<-NULL
+ds$AssessBenefits11<-NULL
+ds$JobContactPriorities1<-NULL
+ds$JobContactPriorities2<-NULL
+ds$JobContactPriorities3<-NULL
+ds$JobContactPriorities4<-NULL
+ds$JobContactPriorities5<-NULL
+ds$JobEmailPriorities1<-NULL
+ds$JobEmailPriorities2<-NULL
+ds$JobEmailPriorities3<-NULL
+ds$JobEmailPriorities4<-NULL
+ds$JobEmailPriorities5<-NULL
+ds$JobEmailPriorities6<-NULL
+ds$JobEmailPriorities7<-NULL
+
+ds$UpdateCV<-NULL
+ds$Currency<-NULL
+
+# Massa NAs
+ds$TimeAfterBootcamp<-NULL
+ds$HackathonReasons<-NULL
+
+ds$AgreeDisagree1<-NULL
+ds$AgreeDisagree2<-NULL
+ds$AgreeDisagree3<-NULL
+
+ds$AdBlocker<-NULL
+ds$AdBlockerDisable<-NULL
+ds$AdBlockerReasons<-NULL
+ds$AdsActions<-NULL
+ds$AdsAgreeDisagree1<-NULL
+ds$AdsAgreeDisagree2<-NULL
+ds$AdsAgreeDisagree3<-NULL
+ds$AdsPriorities1<-NULL
+ds$AdsPriorities2<-NULL
+ds$AdsPriorities3<-NULL
+ds$AdsPriorities4<-NULL
+ds$AdsPriorities5<-NULL
+ds$AdsPriorities6<-NULL
+ds$AdsPriorities7<-NULL
+
+ds$StackOverflowRecommend<-NULL
+ds$StackOverflowParticipate<-NULL
+ds$StackOverflowDevStory<-NULL
+ds$StackOverflowJobs<-NULL
+ds$StackOverflowJobsRecommend<-NULL
+ds$StackOverflowConsiderMember<-NULL
+ds$StackOverflowVisit<-NULL
+ds$StackOverflowHasAccount<-NULL
+
+ds$HypotheticalTools1<-NULL
+ds$HypotheticalTools2<-NULL
+ds$HypotheticalTools3<-NULL
+ds$HypotheticalTools4<-NULL
+ds$HypotheticalTools5<-NULL
+
+ds$SexualOrientation<-NULL
+ds$MilitaryUS<-NULL
+ds$SurveyTooLong<-NULL
+ds$SurveyEasy<-NULL
+
+
+summary(ds)
+
+
+```
+
+
+
+
+
+
+## Pas 2. Eliminar registres amb NAs o outliers
+
+
+Tenir en compte: Dades incorrectes a Salaries. S'observen registres que no semblen correctes. Mirar per Outliers en aquest camp al ser important
+i també en el camp de converted
+
+
+```{r}
+
+# Pràcticament l'única variable continua d'interès és el salari. Una inspecció visual d'aquesta columna delata que potencialment hi poy haver molts valors 
+# atípics. Mirarem la variable ConvertedSalary
+
+summary(ds$ConvertedSalary)
+
+boxplot(ds$ConvertedSalary)
+
+
+```
+
+Veiem que hi ha molts valors atípics. Alguns especialment grans
+
+```{r}
+
+# Eliminar més grans de 300K i tornar a fer el boxplot
+ds <- ds[ds$ConvertedSalary  < 150000, ]
+ds <- ds[ds$ConvertedSalary  > 8000, ]
+
+count(ds)
+
+
+boxplot(ds$ConvertedSalary)
+summary(ds$ConvertedSalary)
+
+
+```
+
+
+
+Ara queden més de la meïtat de NAs. De moment no els treiem ja que no molesten per calcular mitges en temps d'execució i hi ha dades suficients en les dades que sí estan imputades
+
+```{r}
+
+
+write.csv(ds,"ds_cleaned.csv", row.names = T)
+
+
+
+```
+
