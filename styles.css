@@ -155,3 +155,36 @@ p {
     padding: 8px 12px;
     min-width: 200px;
 }
+
+.map-container {
+    /* margin-top: 0px; */
+    text-align: center;
+    border: 1px solid #aaa;
+    background-color: aliceblue;
+    padding-top: 14px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#paisos-seleccionats {
+    border-radius: 3px;
+    border: 1px solid #aaa;
+    width: 100%;
+    min-height: 50px;
+    padding: 3px;
+}
+
+.pais-selected {
+    background: #c0392b;
+    color: white;
+    display: inline-block;
+    border: 1px solid #444;
+    border-radius: 3px;
+    margin: 3px;
+    padding-left: 10px;
+    padding-right: 10px;
+    cursor: pointer;
+}
+.pais-selected i {
+    color: #444;
+}

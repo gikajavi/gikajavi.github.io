@@ -15,14 +15,12 @@ var div = d3
 
 
 // The svg
-var svg = d3.select("svg"),
-    width = +svg.attr("width"),
-    height = +svg.attr("height");
+var svg = null;
 
 // Map and projection
 var path = d3.geoPath();
 var projection = d3.geoCylindricalStereographic()
-    .scale(100);
+    .scale(140);
 
 // Data and color scale
 var data = d3.map();
@@ -56,6 +54,143 @@ let countryExistInSurvey = function(mapName) {
     return countriesDic[countryMap2CountrySurvey(mapName)];
 }
 
+let deleteCountry = pais => {
+    selectedCountries = selectedCountries.filter(c => c !== pais)
+    updateCountriesList();
+    drawMap()
+}
+
+function updateCountriesList() {
+    document.getElementById('paisos-seleccionats').innerHTML = '';
+    let tpl = '';
+    selectedCountries.forEach(pais => {
+        tpl += `<div onclick="deleteCountry('${pais}')" class="pais-selected">${pais} <i class="fas fa-times"></i></div>`;
+    })
+    document.getElementById('paisos-seleccionats').innerHTML = tpl;
+    document.getElementById('paisos-seleccionats-wrapper').style.display = selectedCountries.length ? 'flex' : 'none';
+}
+
+let topo = null;
+
+
+let mouseMove = function(d) {
+    d3.selectAll(".Country")
+        .transition()
+        .duration(100)
+        .style("opacity", .5)
+    d3.select(this)
+        .transition()
+        .duration(100)
+        .style("opacity", 1)
+        .style("cursor", 'hand')
+    // .style("stroke", "black")
+
+    let ht = ''
+
+    let countName = d.properties.name;
+    if (countryExistInSurvey(d.properties.name)) {
+
+        let curCount = countriesDic[countryMap2CountrySurvey(countName)];
+        ht = `<div>${JSON.stringify(curCount)}</div>`;
+        let percen = fN(curCount.total / totalWithCountry * 100);
+        if (percen == '0') {
+            percen = '< 0,01';
+        }
+
+        let totalGender = curCount.male + curCount.female + curCount.others;
+        let percenMale = fN(curCount.male / totalGender * 100);
+        let percenFemale = fN(curCount.female / totalGender * 100);
+        let percenOthers = fN(curCount.others / totalGender * 100);
+
+        ht = `<div>                    
+                    <div style="margin-bottom: 5px;"><b>${countName}</b> (${percen}%)</div>
+                    <div class="row">                        
+                        <div class="col-4"><i class="fas fa-female"></i> ${percenFemale}%</div>
+                        <div class="col-4"><i class="fas fa-male"></i> ${percenMale}%</div>                        
+                        <div class="col-4"><i class="fas fa-venus-mars"></i> ${percenOthers}%</div>
+                    </div>
+                </div>`;
+
+    } else {
+        ht = `<div><b>${countName}</b><br/>(Sense dades)</div>`;
+    }
+
+    div.style("opacity", 1);
+    div
+        .html( ht )
+        .style("left", function () {
+            return d3.event.pageX + 23 + "px";
+        })
+        .style("top", d3.event.pageY - 20 + "px")
+        .style("width", "auto");
+}
+
+let mouseLeave = function(d) {
+    d3.selectAll(".Country")
+        .transition()
+        .duration(200)
+        .style("opacity", 1)
+    div.style("opacity", 0);
+}
+
+let mouseClick = function(d) {
+    const name = countryMap2CountrySurvey(d.properties.name);
+    if (!countryExistInSurvey(d.properties.name)) {
+        return;
+    }
+
+    let fillColor = '#c0392b';
+    if (selectedCountries.includes(name)) {
+        selectedCountries = selectedCountries.filter(c => c !== name)
+        fillColor = '#0984e3';
+    } else {
+        selectedCountries.push(name)
+    }
+    d3.select(this)
+        .attr('fill', fillColor)
+
+    updateCountriesList();
+    drawCharts();
+}
+
+
+// Draw the map
+function drawMap() {
+    svg && svg.remove();
+    svg = d3
+        .select("#map-container")
+        .append("svg")
+        .attr("width", "1020")
+        .attr("height", "410")
+
+    svg.append("g")
+        .selectAll("path")
+        .data(topo.features)
+        .enter()
+        .append("path")
+        // draw each country
+        .attr("d", d3.geoPath()
+            .projection(projection)
+        )
+        // set the color of each country
+        .attr("fill", function (d) {
+            return countryExistInSurvey(d.properties.name)
+                ? (selectedCountries.includes(countryMap2CountrySurvey(d.properties.name)) ? '#c0392b' : '#0984e3') : '#dfe6e9';
+        })
+        .style("stroke", "white")
+        .style("stroke-width", "1.1")
+        .attr("class", function (d) {
+            return "Country"
+        })
+        .style("opacity", 1)
+        .on("mousemove", mouseMove)
+        .on("mouseleave", mouseLeave)
+        .on("click", mouseClick)
+}
+
+
+
+
 
 // Load external data and boot
 // console.log('queue start');
@@ -67,7 +202,10 @@ d3.queue()
     })
     .await(ready);
 
-function ready(error, topo) {
+function ready(error, Topo) {
+    topo = Topo;
+
+    // Inici
     // Compteig d'algunes dades
     dataset.forEach(ele => {
         if (ele.Country !== 'NA') {
@@ -91,137 +229,9 @@ function ready(error, topo) {
             }
         }
     })
-
-
-
-    let mouseMove = function(d) {
-        d3.selectAll(".Country")
-            .transition()
-            .duration(100)
-            .style("opacity", .4)
-        d3.select(this)
-            .transition()
-            .duration(100)
-            .style("opacity", 1)
-            .style("cursor", 'hand')
-         // .style("stroke", "black")
-
-
-        let ht = ''
-
-        let countName = d.properties.name;
-        if (countryExistInSurvey(d.properties.name)) {
-
-            let curCount = countriesDic[countryMap2CountrySurvey(countName)];
-            ht = `<div>${JSON.stringify(curCount)}</div>`;
-            let percen = fN(curCount.total / totalWithCountry * 100);
-            if (percen == '0') {
-                percen = '< 0,01';
-            }
-
-            let totalGender = curCount.male + curCount.female + curCount.others;
-            let percenMale = fN(curCount.male / totalGender * 100);
-            let percenFemale = fN(curCount.female / totalGender * 100);
-            let percenOthers = fN(curCount.others / totalGender * 100);
-
-            ht = `<div>                    
-                    <div style="margin-bottom: 5px;"><b>${countName}</b> (${percen}%)</div>
-                    <div class="row">                        
-                        <div class="col-4"><i class="fas fa-female"></i> ${percenFemale}%</div>
-                        <div class="col-4"><i class="fas fa-male"></i> ${percenMale}%</div>                        
-                        <div class="col-4"><i class="fas fa-venus-mars"></i> ${percenOthers}%</div>
-                    </div>
-                </div>`;
-
-        } else {
-            ht = `<div><b>${countName}</b><br/>(Sense dades)</div>`;
-        }
-
-        div.style("opacity", 1);
-        div
-            .html( ht )
-            .style("left", function () {
-                if (d3.event.pageX > 780) {
-                    return d3.event.pageX - 180 + "px";
-                } else {
-                    return d3.event.pageX + 23 + "px";
-                }
-            })
-            .style("top", d3.event.pageY - 20 + "px")
-            .style("width", "auto");
-    }
-
-    let mouseOver = function(d) {
-        d3.selectAll(".Country")
-            .transition()
-            .duration(100)
-            .style("opacity", .4)
-        d3.select(this)
-            .transition()
-            .duration(100)
-            .style("opacity", 1)
-            .style("cursor", 'hand')
-            // .style("stroke", "black")
-    }
-
-    let mouseLeave = function(d) {
-        d3.selectAll(".Country")
-            .transition()
-            .duration(200)
-            .style("opacity", .6)
-
-        div.style("opacity", 0);
-        // d3.select(this)
-        //     .transition()
-        //     .duration(200)
-        //     .style("stroke", "transparent")
-    }
-
-    let mouseClick = function(d) {
-        const name = countryMap2CountrySurvey(d.properties.name);
-        if (!countryExistInSurvey(d.properties.name)) {
-            return;
-        }
-
-        let fillColor = '#c0392b';
-        if (selectedCountries.includes(name)) {
-            selectedCountries = selectedCountries.filter(c => c !== name)
-            fillColor = '#0984e3';
-        } else {
-            selectedCountries.push(name)
-        }
-        d3.select(this)
-            .attr('fill', fillColor)
-
-        drawCharts();
-    }
-
-
-    // Draw the map
-    // Veure aquí com filtrar Antàrtida
-    // https://bl.ocks.org/Fil/8277a0a590dec3debf142bcd1e827416
-    svg.append("g")
-        .selectAll("path")
-        .data(topo.features)
-        .enter()
-        .append("path")
-        // draw each country
-        .attr("d", d3.geoPath()
-            .projection(projection)
-        )
-        // set the color of each country
-        .attr("fill", function (d) {
-            return countryExistInSurvey( d.properties.name )
-                ?  '#0984e3' : '#dfe6e9';
-        })
-        .style("stroke", "#000")
-        .style("stroke-width", "0.4")
-        .attr("class", function(d){ return "Country" } )
-        .style("opacity", .8)
-        .on("mouseover", mouseOver )
-        .on("mousemove", mouseMove )
-        .on("mouseleave", mouseLeave )
-        .on("click",  mouseClick )
+    // Dibuixar mapa i gràfiques
+    drawMap();
+    drawCharts();
 }
 
 
@@ -280,10 +290,22 @@ function drawChart(varName) {
         return a.value > b.value ? -1 : 1;
     })
 
-// set the dimensions and margins of the graph
-    var margin = {top: 20, right: 30, bottom: 40, left: 90},
-        width = 460 - margin.left - margin.right,
-        height = 350 - margin.top - margin.bottom;
+    // MOstrem fins a 15 conceptes
+    data.splice(15);
+
+
+    // set the dimensions and margins of the graph
+    let maxConceptLength = 0;
+    data.forEach(ele => {
+        if (ele.concept.length > maxConceptLength) {
+            maxConceptLength = ele.concept.length
+        }
+    })
+    const marginLeft = maxConceptLength * 6;
+
+    var margin = {top: 20, right: 10, bottom: 40, left: marginLeft},
+        width = 510 - margin.left - margin.right,
+        height = 360 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
     var svg = d3.select("#charts")
@@ -324,12 +346,5 @@ function drawChart(varName) {
             .attr("width", function(d) { return x(d.value); })
             .attr("height", y.bandwidth() )
             .attr("fill", "#69b3a2")
-
-
-        // .attr("x", function(d) { return x(d.Country); })
-        // .attr("y", function(d) { return y(d.Value); })
-        // .attr("width", x.bandwidth())
-        // .attr("height", function(d) { return height - y(d.Value); })
-        // .attr("fill", "#69b3a2")
 
 }
