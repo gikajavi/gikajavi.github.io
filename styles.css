@@ -137,9 +137,21 @@ body, select ,input, option {
     font-size: 16px;
     color: #444;
     line-height: 1.5;
+    box-sizing: content-box;
 }
 
 p {
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+
+.tooltip {
+    color: black;
+    border: 1px solid black;
+    background: white;
+    position: absolute;
+    opacity: 0;
+    padding: 8px 12px;
+    min-width: 200px;
 }

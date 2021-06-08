@@ -3,11 +3,12 @@
 <html>
     <meta charset="utf-8">
 
-    <script src="http://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3.v4.js"></script>
     <!--<script src="https://d3js.org/d3.v6.min.js"></script>-->
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
     <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="grid.css">
     <link rel="stylesheet" href="styles.css">
 </html>
@@ -15,74 +16,77 @@
 <body>
     <div class="row" style="width: 100%;">
         <!-- Mapa mundial de països -->
-        <div class="col-12" style="overflow-x: hidden; overflow-y: hidden;">
-            <div style="margin-left: -180px; margin-top: -50px; margin-bottom: -155px;">
-                <svg id="my_dataviz" width="1000" height="800"></svg>
+        <div class="col-8" style="overflow-x: hidden; overflow-y: hidden;">
+            <div style="margin-left: -161px; margin-top: -50px;">
+                <svg id="my_dataviz" width="1000" height="360"></svg>
             </div>
+
+            <div class="row">
+                <div class="col-4">
+                    Sexe
+                    <select>
+                        <option>Tots</option>
+                        <option>Homes</option>
+                        <option>Dones</option>
+                        <option>Comparar</option>
+                    </select>
+                </div>
+
+                <div class="col-4">
+                    Franja d'Edat
+                    <select>
+                        <option>Tots</option>
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                    </select>
+                </div>
+                <div class="col-4">
+                    Experiència
+                    <select>
+                        <option>Tots</option>
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <p>
+                    Permetem seleccionar algun dels criteris anteriors.
+                    En el cas de riar comparar, agrupem la informació segons el criteri a comparar
+                    (i els altres quden anul·lats ja que no agruparem per més d'un criteri)
+                </p>
+
+                <p>És a dir</p>
+                <ol>
+                    <li>1 Filtres incloents de cada criteri</li>
+                    <li>2 Agrupacions excloents</li>
+                </ol>
+
+                <p>Quan algun dels criteris estpa indicats (no està a "Tots") no es mostra la seva gràfica a la zona inferior</p>
+                <p>
+                    Idees de la enquesta de 2020
+                    <a href="https://insights.stackoverflow.com/survey/2020">https://insights.stackoverflow.com/survey/2020</a>
+                </p>
+                <p>
+                    Gràfiques de barres en horitzontal:
+                    https://www.d3-graph-gallery.com/graph/barplot_horizontal.html
+                </p>
+
+            </div>
+
+
+
         </div>
-        <!-- Altres selectors-->
-    </div>
 
-
-    <div class="row">
         <div class="col-4">
-            Sexe
-            <select>
-                <option>Tots</option>
-                <option>Homes</option>
-                <option>Dones</option>
-                <option>Comparar</option>
-            </select>
+            <!-- Zona per les gràfiques -->
+            <div id="charts"></div>
         </div>
-
-        <div class="col-4">
-            Franja d'Edat
-            <select>
-                <option>Tots</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-            </select>
-        </div>
-        <div class="col-4">
-            Experiència
-            <select>
-                <option>Tots</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-            </select>
-        </div>
-    </div>
-
-    <div>
-        <p>
-        Permetem seleccionar algun dels criteris anteriors.
-        En el cas de riar comparar, agrupem la informació segons el criteri a comparar
-        (i els altres quden anul·lats ja que no agruparem per més d'un criteri)
-        </p>
-
-        <p>És a dir</p>
-        <ol>
-            <li>1 Filtres incloents de cada criteri</li>
-            <li>2 Agrupacions excloents</li>
-        </ol>
-
-        <p>Quan algun dels criteris estpa indicats (no està a "Tots") no es mostra la seva gràfica a la zona inferior</p>
-        <p>
-            Idees de la enquesta de 2020
-            <a href="https://insights.stackoverflow.com/survey/2020">https://insights.stackoverflow.com/survey/2020</a>
-        </p>
-        <p>
-            Gràfiques de barres en horitzontal:
-            https://www.d3-graph-gallery.com/graph/barplot_horizontal.html
-        </p>
 
     </div>
-
-
-
-
 
     <script src="source.js"></script>
 </body>
