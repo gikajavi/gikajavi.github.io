@@ -35,6 +35,7 @@ let dataset = []
 // Diccionari de països (per saber ràpidament si existeixen en l'enquesta)
 let countriesDic = {}
 let totalWithCountry = 0;
+let selectedCountries = [];
 
 
 let countryMap2CountrySurvey = function(mapName) {
@@ -51,13 +52,13 @@ let countryMap2CountrySurvey = function(mapName) {
     return mapName;
 }
 
-let countryExistInSurvey = function(d) {
-    return countriesDic[countryMap2CountrySurvey(d.name)];
+let countryExistInSurvey = function(mapName) {
+    return countriesDic[countryMap2CountrySurvey(mapName)];
 }
 
 
 // Load external data and boot
-console.log('queue start');
+// console.log('queue start');
 
 d3.queue()
     .defer(d3.json, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")
@@ -94,10 +95,22 @@ function ready(error, topo) {
 
 
     let mouseMove = function(d) {
+        d3.selectAll(".Country")
+            .transition()
+            .duration(100)
+            .style("opacity", .4)
+        d3.select(this)
+            .transition()
+            .duration(100)
+            .style("opacity", 1)
+            .style("cursor", 'hand')
+         // .style("stroke", "black")
+
+
         let ht = ''
 
         let countName = d.properties.name;
-        if (countryExistInSurvey({ id: d.id, name: d.properties.name })) {
+        if (countryExistInSurvey(d.properties.name)) {
 
             let curCount = countriesDic[countryMap2CountrySurvey(countName)];
             ht = `<div>${JSON.stringify(curCount)}</div>`;
@@ -139,7 +152,6 @@ function ready(error, topo) {
     }
 
     let mouseOver = function(d) {
-        // console.log(d)
         d3.selectAll(".Country")
             .transition()
             .duration(100)
@@ -166,63 +178,22 @@ function ready(error, topo) {
     }
 
     let mouseClick = function(d) {
+        const name = countryMap2CountrySurvey(d.properties.name);
+        if (!countryExistInSurvey(d.properties.name)) {
+            return;
+        }
 
+        let fillColor = '#c0392b';
+        if (selectedCountries.includes(name)) {
+            selectedCountries = selectedCountries.filter(c => c !== name)
+            fillColor = '#0984e3';
+        } else {
+            selectedCountries.push(name)
+        }
+        d3.select(this)
+            .attr('fill', fillColor)
 
-// set the dimensions and margins of the graph
-        var margin = {top: 20, right: 30, bottom: 40, left: 90},
-            width = 460 - margin.left - margin.right,
-            height = 350 - margin.top - margin.bottom;
-
-// append the svg object to the body of the page
-        var svg = d3.select("#charts")
-            .append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform",
-                "translate(" + margin.left + "," + margin.top + ")");
-
-// Parse the Data
-        d3.csv("https://raw.githubusercontent.com/holtzy/data_to_viz/master/Example_dataset/7_OneCatOneNum_header.csv", function(data) {
-
-            // Add X axis
-            var x = d3.scaleLinear()
-                .domain([0, 13000])
-                .range([ 0, width]);
-            svg.append("g")
-                .attr("transform", "translate(0," + height + ")")
-                .call(d3.axisBottom(x))
-                .selectAll("text")
-                .attr("transform", "translate(-10,0)rotate(-45)")
-                .style("text-anchor", "end");
-
-            // Y axis
-            var y = d3.scaleBand()
-                .range([ 0, height ])
-                .domain(data.map(function(d) { return d.Country; }))
-                .padding(.1);
-            svg.append("g")
-                .call(d3.axisLeft(y))
-
-            //Bars
-            svg.selectAll("myRect")
-                .data(data)
-                .enter()
-                .append("rect")
-                .attr("x", x(0) )
-                .attr("y", function(d) { return y(d.Country); })
-                .attr("width", function(d) { return x(d.Value); })
-                .attr("height", y.bandwidth() )
-                .attr("fill", "#69b3a2")
-
-
-            // .attr("x", function(d) { return x(d.Country); })
-            // .attr("y", function(d) { return y(d.Value); })
-            // .attr("width", x.bandwidth())
-            // .attr("height", function(d) { return height - y(d.Value); })
-            // .attr("fill", "#69b3a2")
-
-        })
+        drawCharts();
     }
 
 
@@ -240,14 +211,125 @@ function ready(error, topo) {
         )
         // set the color of each country
         .attr("fill", function (d) {
-            return countryExistInSurvey( { id: d.id, name: d.properties.name })
-                ?  '#3498db' : '#ccc';
+            return countryExistInSurvey( d.properties.name )
+                ?  '#0984e3' : '#dfe6e9';
         })
-        .style("stroke", "transparent")
+        .style("stroke", "#000")
+        .style("stroke-width", "0.4")
         .attr("class", function(d){ return "Country" } )
         .style("opacity", .8)
         .on("mouseover", mouseOver )
         .on("mousemove", mouseMove )
         .on("mouseleave", mouseLeave )
         .on("click",  mouseClick )
+}
+
+
+function drawCharts() {
+    document.getElementById('charts').innerHTML = '';
+
+    // console.log(selectedCountries)
+    drawChart('LanguageWorkedWith');
+    drawChart('LanguageDesireNextYear');
+    drawChart('DatabaseWorkedWith');
+    drawChart('DatabaseDesireNextYear');
+    drawChart('PlatformWorkedWith');
+    drawChart('PlatformDesireNextYear');
+    drawChart('FrameworkWorkedWith');
+    drawChart('FrameworkDesireNextYear');
+    drawChart('DevType');
+    drawChart('CompanySize');
+    drawChart('FormalEducation');
+}
+
+
+function getData4Chart(varName) {
+    let total = 0;
+    let d = {}
+    dataset.forEach(ele => {
+        // Possibles filtres
+        if (selectedCountries.length > 0) {
+            if (!selectedCountries.includes(ele.Country)) {
+                return;
+            }
+        }
+
+        const v = ele[varName];
+        if (v !== 'NA') {
+            v.split(';').forEach(ev => {
+                total++;
+                if (!(ev in d)) {
+                    d[ev] = 0;
+                }
+                d[ev]++;
+            })
+        }
+    })
+
+    let l = [];
+    Object.keys(d).forEach(k => {
+        l.push( { concept: k, value: Math.round(d[k] / total * 1000)/10} );
+    })
+    return l;
+}
+
+
+function drawChart(varName) {
+    let data = getData4Chart(varName);
+    data.sort(function (a, b) {
+        return a.value > b.value ? -1 : 1;
+    })
+
+// set the dimensions and margins of the graph
+    var margin = {top: 20, right: 30, bottom: 40, left: 90},
+        width = 460 - margin.left - margin.right,
+        height = 350 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+    var svg = d3.select("#charts")
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+
+        // Add X axis
+        var x = d3.scaleLinear()
+            .domain([0, d3.max(data.map(d => d.value)) ])
+            .range([ 0, width]);
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("transform", "translate(-10,0)rotate(-45)")
+            .style("text-anchor", "end");
+
+        // Y axis
+        var y = d3.scaleBand()
+            .range([ 0, height ])
+            .domain(data.map(function(d) { return d.concept; }))
+            .padding(.1);
+        svg.append("g")
+            .call(d3.axisLeft(y))
+
+        //Bars
+        svg.selectAll("myRect")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("x", x(0) )
+            .attr("y", function(d) { return y(d.concept); })
+            .attr("width", function(d) { return x(d.value); })
+            .attr("height", y.bandwidth() )
+            .attr("fill", "#69b3a2")
+
+
+        // .attr("x", function(d) { return x(d.Country); })
+        // .attr("y", function(d) { return y(d.Value); })
+        // .attr("width", x.bandwidth())
+        // .attr("height", function(d) { return height - y(d.Value); })
+        // .attr("fill", "#69b3a2")
+
 }
