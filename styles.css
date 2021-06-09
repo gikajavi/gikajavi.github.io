@@ -270,3 +270,25 @@ svg {
     overflow: hidden;
     margin-top: -15px;
 }
+
+.container {
+    width: 1200px;
+}
+
+#navigation {
+    position: sticky;
+    top: 28px;
+}
+
+#navigation div {
+    margin-bottom: 14px;
+    max-width: 170px;
+}
+
+#navigation div a {
+    color: #444;
+}
+
+#navigation div a:hover {
+    font-weight: bold;
+}
