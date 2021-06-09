@@ -250,6 +250,7 @@ function ready(error, Topo) {
         .on("click", function (e) {
             document.querySelectorAll('.genre-button.selected')[0].classList.remove('selected');
             this.classList.add('selected');
+            drawCharts();
         });
 
     // Dibuixar mapa i gràfiques
@@ -261,32 +262,66 @@ function ready(error, Topo) {
 function drawCharts() {
     document.getElementById('charts').innerHTML = '';
 
-    histogramChart('ConvertedSalary');
-    hbarsChart('LanguageWorkedWith');
-    hbarsChart('LanguageDesireNextYear');
-    hbarsChart('DatabaseWorkedWith');
-    hbarsChart('DatabaseDesireNextYear');
-    hbarsChart('PlatformWorkedWith');
-    hbarsChart('PlatformDesireNextYear');
-    hbarsChart('FrameworkWorkedWith');
-    hbarsChart('FrameworkDesireNextYear');
-    hbarsChart('IDE');
-    hbarsChart('DevType');
-    hbarsChart('CompanySize');
-    hbarsChart('FormalEducation');
+    let countries = JSON.parse(JSON.stringify(selectedCountries));
+    if (countries.length == 0) {
+        countries.push('Món')
+    }
+
+    let vars = ['ConvertedSalary', 'LanguageWorkedWith', 'LanguageDesireNextYear', 'DatabaseWorkedWith', 'DatabaseDesireNextYear',
+                            'PlatformWorkedWith', 'PlatformDesireNextYear', 'FrameworkWorkedWith', 'FrameworkDesireNextYear',
+                            'IDE', 'DevType', 'CompanySize', 'FormalEducation'];
+    let continuousVars = ['ConvertedSalary'];
+
+    vars.forEach(varName => {
+        countries.forEach(country => {
+            let filters = {}
+            if (country !== 'Món') {
+                filters.Country = country;
+            }
+            let mode = continuousVars.includes(varName) ? 'continuous' : 'categorical';
+            if (getGenreMode() == 'compare') {
+                plot( getData4Chart(varName, { Gender: 'Female', ...filters }, mode), `${varName} dones (${country})`, mode )
+                plot( getData4Chart(varName, { Gender: 'Male', ...filters }, mode), `${varName} homes (${country})`, mode )
+            } else {
+                let title = varName;
+                if (getGenreMode() == 'male') {
+                    title += ' Homes';
+                    filters.Gender = 'Male';
+                }
+                if (getGenreMode() == 'female') {
+                    title += ' Homes';
+                    filters.Gender = 'Female';
+                }
+                title += ` (${country})`;
+                plot( getData4Chart(varName, filters, mode), title, mode )
+            }
+        })
+    });
 }
 
 
-function getData4Chart(varName) {
+function getData4Chart(varName, filters, mode) {
+    if (mode === 'continuous') {
+        return getContinuousVar4Chart(varName, filters);
+    } else {
+        return getCategoricalVar4Chart(varName, filters);
+    }
+}
+
+
+function getCategoricalVar4Chart(varName, filters) {
     let total = 0;
     let d = {}
     dataset.forEach(ele => {
         // Possibles filtres
-        if (selectedCountries.length > 0) {
-            if (!selectedCountries.includes(ele.Country)) {
-                return;
+        let continuar = true;
+        Object.keys(filters).forEach(flt => {
+            let v = filters[flt]
+            if (ele[flt] !== v) {
+                continuar = false;
             }
-        }
+        });
+        if (!continuar) return;
 
         const v = ele[varName];
         if (v !== 'NA') {
@@ -307,15 +342,19 @@ function getData4Chart(varName) {
     return l;
 }
 
-function getContinuousVar4Chart(varName) {
+
+function getContinuousVar4Chart(varName, filters) {
     let l = [];
     dataset.forEach(ele => {
         // Possibles filtres
-        if (selectedCountries.length > 0) {
-            if (!selectedCountries.includes(ele.Country)) {
-                return;
+        let continuar = true;
+        Object.keys(filters).forEach(flt => {
+            let v = filters[flt]
+            if (ele[flt] !== v) {
+                continuar = false;
             }
-        }
+        });
+        if (!continuar) return;
 
         const v = ele[varName];
         if (v !== 'NA') {
@@ -325,18 +364,22 @@ function getContinuousVar4Chart(varName) {
     return l;
 }
 
+function plot(data, title, mode) {
+    if (mode === 'continuous') {
+        histogramChart(data, title);
+    } else {
+        hbarsChart(data, title);
+    }
+}
 
-
-function histogramChart(varName) {
-    let data = getContinuousVar4Chart(varName);
-
+function histogramChart(data, title) {
     var margin = {top: 20, right: 10, bottom: 40, left: 40},
         width = 510 - margin.left - margin.right,
         height = 360 - margin.top - margin.bottom;
 
     const newId = 'chart-' + makeid(8);
     d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6');
-    d3.select("#" + newId).html(`<div style="font-weight: bold; text-align: center;">${varName}</div>`)
+    d3.select("#" + newId).html(`<div style="font-weight: bold; text-align: center;">${title}</div>`)
 
     var svg = d3.select("#" + newId)
         .append("svg")
@@ -392,102 +435,18 @@ function histogramChart(varName) {
         .attr("y1", y(0))
         .attr("y2", y(maxY))
         .attr("stroke", "red")
-        .style('stroke-width', "2")
-        // .attr("stroke-dasharray", "4")
+        .style('stroke-width', "1.5")
+        .attr("stroke-dasharray", "3")
     svg
         .append("text")
         .attr("x", x(mitja) + 10)
         .attr("y", y(maxY) + 14)
         .text("Mitja: " + fN(mitja))
         .style("font-size", "13px")
-
-
 }
 
 
-
-
-function densityChart(varName) {
-    let data = getContinuousVar4Chart(varName);
-
-    var margin = {top: 30, right: 30, bottom: 30, left: 50},
-        width = 460 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
-
-    const newId = 'chart-' + makeid(8);
-    d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6');
-    d3.select("#" + newId).html(`<div style="font-weight: bold; text-align: center;">${varName}</div>`)
-
-    var svg = d3.select("#" + newId)
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform",
-            "translate(" + margin.left + "," + margin.top + ")");
-
-        // add the x Axis
-        var x = d3.scaleLinear()
-            .domain([0, d3.max(data.map(d => d)) + 1000])
-            // .domain([0, 1000])
-            .range([0, width]);
-        svg.append("g")
-            .attr("transform", "translate(0," + height + ")")
-            .call(d3.axisBottom(x));
-
-        // add the y Axis
-        var y = d3.scaleLinear()
-            .range([height, 0])
-            .domain([0, 0.0005]);
-        svg.append("g")
-            .call(d3.axisLeft(y));
-
-        // Compute kernel density estimation
-        var kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(40))
-        var density = kde(data.map(function (d) {
-            return d;
-        }))
-
-        // Plot the area
-        svg.append("path")
-            .attr("class", "mypath")
-            .datum(density)
-            .attr("fill", "#69b3a2")
-            .attr("opacity", ".8")
-            .attr("stroke", "#000")
-            .attr("stroke-width", 1)
-            .attr("stroke-linejoin", "round")
-            .attr("d", d3.line()
-                .curve(d3.curveBasis)
-                .x(function (d) {
-                    return x(d[0]);
-                })
-                .y(function (d) {
-                    return y(d[1]);
-                })
-            );
-
-    // Function to compute density
-    function kernelDensityEstimator(kernel, X) {
-        return function(V) {
-            return X.map(function(x) {
-                return [x, d3.mean(V, function(v) { return kernel(x - v); })];
-            });
-        };
-    }
-    function kernelEpanechnikov(k) {
-        return function(v) {
-            return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
-        };
-    }
-
-}
-
-
-
-
-function hbarsChart(varName) {
-    let data = getData4Chart(varName);
+function hbarsChart(data, title) {
     data.sort(function (a, b) {
         return a.value > b.value ? -1 : 1;
     })
@@ -510,7 +469,7 @@ function hbarsChart(varName) {
 
     const newId = 'chart-' + makeid(8);
     d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6');
-    d3.select("#" + newId).html(`<div style="font-weight: bold; text-align: center;">${varName}</div>`)
+    d3.select("#" + newId).html(`<div style="font-weight: bold; text-align: center;">${title}</div>`)
 
     var svg = d3.select("#" + newId)
         .append("svg")
