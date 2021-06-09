@@ -170,8 +170,8 @@ p {
     border-radius: 3px;
     border: 1px solid #aaa;
     width: 100%;
-    min-height: 50px;
-    padding: 3px;
+    /*min-height: 40px;*/
+    padding: 6px;
 }
 
 .pais-selected {
@@ -187,4 +187,34 @@ p {
 }
 .pais-selected i {
     color: #444;
+}
+
+.altres-filtres {
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.altres-filtres i {
+    font-size: 24px;
+    vertical-align: top;
+    margin-right: 6px;
+}
+
+.genre-button {
+    display: inline-block;
+    margin-right: 28px;
+    padding: 6px 12px 3px;
+    min-width: 150px;
+    border: 2px solid white;
+}
+
+.genre-button.selected {
+    border: 2px solid #4b9766;
+    border-radius: 4px;
+    background: #efefef;
+}
+
+.genre-button:hover {
+    border: 2px solid #4b9766;
+    border-radius: 4px;
 }

@@ -84,6 +84,10 @@ function updateCountriesList() {
 
 let topo = null;
 
+let getGenreMode = () => {
+    return document.querySelectorAll('.genre-button.selected')[0].dataset.mode;
+}
+
 
 let mouseMove = function(d) {
     d3.selectAll(".Country")
@@ -241,6 +245,13 @@ function ready(error, Topo) {
             }
         }
     })
+
+    d3.selectAll(".genre-button")
+        .on("click", function (e) {
+            document.querySelectorAll('.genre-button.selected')[0].classList.remove('selected');
+            this.classList.add('selected');
+        });
+
     // Dibuixar mapa i gràfiques
     drawMap();
     drawCharts();
@@ -455,8 +466,6 @@ function densityChart(varName) {
                     return y(d[1]);
                 })
             );
-
-
 
     // Function to compute density
     function kernelDensityEstimator(kernel, X) {

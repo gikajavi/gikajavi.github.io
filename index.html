@@ -17,86 +17,34 @@
 
     <div class="container">
         <div class="row" style="width: 100%;">
-            <!-- Mapa mundial de països -->
-            <div class="col-12" style="overflow-x: hidden; overflow-y: hidden;">
+            <div class="col-12 mb-8x">
                 <div class="map-container" id="map-container" >
                 </div>
-
                 <div class="row" id="paisos-seleccionats-wrapper" style="display: none;">
                     <div class="col-12">
                         <div id="paisos-seleccionats">
                         </div>
                     </div>
-
-                    <div class="col-4">
-                        Sexe
-                        <select>
-                            <option>Tots</option>
-                            <option>Homes</option>
-                            <option>Dones</option>
-                            <option>Comparar</option>
-                        </select>
-                    </div>
-
-                    <div class="col-4">
-                        Franja d'Edat
-                        <select>
-                            <option>Tots</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                        </select>
-                    </div>
-                    <div class="col-4">
-                        Experiència
-                        <select>
-                            <option>Tots</option>
-                            <option>1</option>
-                            <option>2</option>
-                            <option>3</option>
-                        </select>
-                    </div>
                 </div>
+            </div>
 
-                <div>
-                    <p>
-                        Permetem seleccionar algun dels criteris anteriors.
-                        En el cas de riar comparar, agrupem la informació segons el criteri a comparar
-                        (i els altres quden anul·lats ja que no agruparem per més d'un criteri)
-                    </p>
-
-                    <p>És a dir</p>
-                    <ol>
-                        <li>1 Filtres incloents de cada criteri</li>
-                        <li>2 Agrupacions excloents</li>
-                    </ol>
-
-                    <p>Quan algun dels criteris estpa indicats (no està a "Tots") no es mostra la seva gràfica a la zona inferior</p>
-                    <p>
-                        Idees de la enquesta de 2020
-                        <a href="https://insights.stackoverflow.com/survey/2020">https://insights.stackoverflow.com/survey/2020</a>
-                    </p>
-                    <p>
-                        Gràfiques de barres en horitzontal:
-                        <a href="https://www.d3-graph-gallery.com/graph/barplot_horizontal.html">https://www.d3-graph-gallery.com/graph/barplot_horizontal.html</a>
-                    </p>
-                    <p>
-                        Variables contínues (salari)
-                        <a href="https://www.d3-graph-gallery.com/graph/density_double.html">https://www.d3-graph-gallery.com/graph/density_double.html</a>
-                    </p>
-
-                    <p>
-                        Pendents
-                        <ul>
-                            <li>Salaris: Densitat absolut, segons sexe, segons grup edat, tamany empresa, YearsCoding (experiència) </li>
-
-                        </ul>
-
-                    </p>
-
-
+            <div class="col-12 row mb-10x altres-filtres">
+                <div class="genre-button selected" data-mode="all">
+                    <i class="fas fa-restroom"></i>
+                    Tothom
                 </div>
-
+                <div class="genre-button" data-mode="female">
+                    <i class="fas fa-female"></i>
+                    Només dones
+                </div>
+                <div class="genre-button" data-mode="male">
+                    <i class="fas fa-male"></i>
+                    Només homes
+                </div>
+                <div class="genre-button" data-mode="compare">
+                    <i class="fas fa-chart-pie"></i>
+                    Comparar
+                </div>
             </div>
 
             <div class="col-12">
