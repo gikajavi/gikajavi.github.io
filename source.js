@@ -722,5 +722,6 @@ function vbarsChart(data, title) {
             .attr("width", x.bandwidth())
             .attr("height", function(d) { return height - y(d.value); })
             .attr("fill", randomColor())
+            .style('opacity', '0.6')
 
 }
