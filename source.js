@@ -6,11 +6,18 @@ trans = {
     DatabaseDesireNextYear: 'Gestors BBDD desitjats',
     PlatformWorkedWith: 'Plataformes conegudes',
     PlatformDesireNextYear: 'Plataformes desitjades',
-    FrameworkWorkedWith: 'Framewors coneguts',
-    FrameworkDesireNextYear: 'Framewors desitjats',
+    FrameworkWorkedWith: 'Frameworks coneguts',
+    FrameworkDesireNextYear: 'Frameworks desitjats',
     DevType: 'Rols',
     CompanySize: 'Tamany empresa / organització',
     FormalEducation: 'Nivell educatiu'
+}
+
+const colors = ['#222f3e', '#2e86de', '#8395a7', '#0abde3', '#01a3a4', '#182C61'
+                , '#2C3A47', '#6D214F', '#30336b', '#130f40', '#192a56', '#273c75', '#1e272e'];
+
+function randomColor() {
+    return colors[Math.floor(Math.random() * colors.length)];
 }
 
 function trVar(varName) {
@@ -52,11 +59,6 @@ var path = d3.geoPath();
 var projection = d3.geoCylindricalStereographic()
     .scale(140);
 
-// Data and color scale
-var data = d3.map();
-var colorScale = d3.scaleThreshold()
-    .domain([100000, 1000000, 10000000, 30000000, 100000000, 500000000])
-    .range(d3.schemeBlues[7]);
 
 // Totes les dades (netejades prèviament)
 let dataset = []
@@ -327,8 +329,8 @@ function drawCharts() {
 
 function titleTpl(varName, tGender, tCountry) {
     return`<div class="row title-chart">
-                <div class="col-8">${varName}</div>
-                <div class="col-4" style="text-align: right;">${tGender} ${tCountry}</div>
+                <div class="col-6 title">${varName}</div>
+                <div class="col-6" style="text-align: right;">${tGender} ${tCountry}</div>
             </div>`;
 }
 
@@ -455,7 +457,8 @@ function histogramChart(data, title) {
         .attr("transform", function(d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
         .attr("width", function(d) { return x(d.x1) - x(d.x0) -1 ; })
         .attr("height", function(d) { return height - y(d.length); })
-        .style("fill", "#69b3a2")
+        .style("fill", randomColor())
+        .style('opacity', '0.6')
 
 
     let mitja = d3.mean(data);
@@ -468,8 +471,8 @@ function histogramChart(data, title) {
         .attr("y1", y(0))
         .attr("y2", y(maxY))
         .attr("stroke", "red")
-        .style('stroke-width', "1.5")
-        .attr("stroke-dasharray", "3")
+        .style('stroke-width', "2")
+
     svg
         .append("text")
         .attr("x", x(mitja) + 10)
@@ -540,6 +543,7 @@ function hbarsChart(data, title) {
             .attr("y", function(d) { return y(d.concept); })
             .attr("width", function(d) { return x(d.value); })
             .attr("height", y.bandwidth() )
-            .attr("fill", "#69b3a2")
+            .attr("fill", randomColor())
+            .style('opacity', '0.6')
 
 }

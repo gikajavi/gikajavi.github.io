@@ -220,7 +220,13 @@ p {
 }
 
 .title-chart {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+}
+
+.title-chart .title {
+    font-weight: bold;
+    color: #7f8fa6;
+    padding-left: 12px;
 }
 
 .title-chart div {
