@@ -1,3 +1,22 @@
+trans = {
+    ConvertedSalary: 'Salari (USD)',
+    LanguageWorkedWith: 'Llenguatges coneguts',
+    LanguageDesireNextYear: 'Llenguatges desitjats',
+    DatabaseWorkedWith: 'Gestors BBDD coneguts',
+    DatabaseDesireNextYear: 'Gestors BBDD desitjats',
+    PlatformWorkedWith: 'Plataformes conegudes',
+    PlatformDesireNextYear: 'Plataformes desitjades',
+    FrameworkWorkedWith: 'Framewors coneguts',
+    FrameworkDesireNextYear: 'Framewors desitjats',
+    DevType: 'Rols',
+    CompanySize: 'Tamany empresa / organització',
+    FormalEducation: 'Nivell educatiu'
+}
+
+function trVar(varName) {
+    return varName in trans ? trans[varName] : varName;
+}
+
 function fN(n) {
     // var formatValue = d3.format("0,000");
     return (Math.round(n*10)/10).toString()
@@ -280,23 +299,37 @@ function drawCharts() {
             }
             let mode = continuousVars.includes(varName) ? 'continuous' : 'categorical';
             if (getGenreMode() == 'compare') {
-                plot( getData4Chart(varName, { Gender: 'Female', ...filters }, mode), `${varName} dones (${country})`, mode )
-                plot( getData4Chart(varName, { Gender: 'Male', ...filters }, mode), `${varName} homes (${country})`, mode )
+                let tCountry = '';
+                country == 'Món' ? tCountry = '<i class="fas fa-globe-americas"></i>' : tCountry = ` <b class="ml-2x">${country}</b>`;
+                title = titleTpl(trVar(varName), '<i class="fas fa-female"></i>', tCountry)
+                plot( getData4Chart(varName, { Gender: 'Female', ...filters }, mode), title, mode )
+                title = titleTpl(trVar(varName), '<i class="fas fa-male"></i>', tCountry)
+                plot( getData4Chart(varName, { Gender: 'Male', ...filters }, mode), title, mode )
             } else {
-                let title = varName;
+                let tGender = '';
                 if (getGenreMode() == 'male') {
-                    title += ' Homes';
+                    tGender = '<i class="fas fa-male"></i>';
                     filters.Gender = 'Male';
                 }
                 if (getGenreMode() == 'female') {
-                    title += ' Homes';
+                    tGender = '<i class="fas fa-female"></i>';
                     filters.Gender = 'Female';
                 }
-                title += ` (${country})`;
+                let tCountry = '';
+                country == 'Món' ? tCountry = '<i class="fas fa-globe-americas"></i>' : tCountry = ` <b class="ml-2x">${country}</b>`;
+                title = titleTpl(trVar(varName), tGender, tCountry)
+
                 plot( getData4Chart(varName, filters, mode), title, mode )
             }
         })
     });
+}
+
+function titleTpl(varName, tGender, tCountry) {
+    return`<div class="row title-chart">
+                <div class="col-8">${varName}</div>
+                <div class="col-4" style="text-align: right;">${tGender} ${tCountry}</div>
+            </div>`;
 }
 
 
@@ -374,12 +407,12 @@ function plot(data, title, mode) {
 
 function histogramChart(data, title) {
     var margin = {top: 20, right: 10, bottom: 40, left: 40},
-        width = 510 - margin.left - margin.right,
+        width = 494 - margin.left - margin.right,
         height = 360 - margin.top - margin.bottom;
 
     const newId = 'chart-' + makeid(8);
-    d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6');
-    d3.select("#" + newId).html(`<div style="font-weight: bold; text-align: center;">${title}</div>`)
+    d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6 p-4x');
+    d3.select("#" + newId).html( title )
 
     var svg = d3.select("#" + newId)
         .append("svg")
@@ -451,7 +484,7 @@ function hbarsChart(data, title) {
         return a.value > b.value ? -1 : 1;
     })
 
-    // MOstrem fins a 15 conceptes
+    // Mostrem fins a 15 conceptes
     data.splice(15);
 
     // set the dimensions and margins of the graph
@@ -464,12 +497,12 @@ function hbarsChart(data, title) {
     const marginLeft = maxConceptLength * 6;
 
     var margin = {top: 20, right: 10, bottom: 40, left: marginLeft},
-        width = 510 - margin.left - margin.right,
+        width = 494 - margin.left - margin.right,
         height = 360 - margin.top - margin.bottom;
 
     const newId = 'chart-' + makeid(8);
-    d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6');
-    d3.select("#" + newId).html(`<div style="font-weight: bold; text-align: center;">${title}</div>`)
+    d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6 p-4x');
+    d3.select("#" + newId).html( title )
 
     var svg = d3.select("#" + newId)
         .append("svg")
@@ -478,7 +511,6 @@ function hbarsChart(data, title) {
         .append("g")
         .attr("transform",
             "translate(" + margin.left + "," + margin.top + ")");
-
 
         // Add X axis
         var x = d3.scaleLinear()

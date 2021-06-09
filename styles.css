@@ -218,3 +218,19 @@ p {
     border: 2px solid #4b9766;
     border-radius: 4px;
 }
+
+.title-chart {
+    margin-bottom: 10px;
+}
+
+.title-chart div {
+    line-height: 32px;
+
+}
+
+.title-chart i {
+    font-size: 28px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
