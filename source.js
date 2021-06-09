@@ -45,7 +45,7 @@ let vars = [
 
 let continuousVars = ['ConvertedSalary'];
 let verticalBars = ['FormalEducation', 'Hobby', 'OpenSource', 'DevType', 'EducationTypes', 'SelfTaughtTypes', 'RaceEthnicity', 'EducationParents',
-                        'Dependents', 'HopeFiveYears', 'JobSearchStatus', 'Methodology', 'VersionControl']
+                        'Dependents', 'HopeFiveYears', 'JobSearchStatus', 'Methodology', 'VersionControl', 'Employment']
 
 trans = {
     ConvertedSalary: 'Salari (USD)',
