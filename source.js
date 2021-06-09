@@ -319,9 +319,9 @@ function getContinuousVar4Chart(varName) {
 function histogramChart(varName) {
     let data = getContinuousVar4Chart(varName);
 
-    var margin = {top: 10, right: 30, bottom: 30, left: 40},
-        width = 460 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+    var margin = {top: 20, right: 10, bottom: 40, left: 40},
+        width = 510 - margin.left - margin.right,
+        height = 360 - margin.top - margin.bottom;
 
     const newId = 'chart-' + makeid(8);
     d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6');
@@ -386,7 +386,7 @@ function histogramChart(varName) {
     svg
         .append("text")
         .attr("x", x(mitja) + 10)
-        .attr("y", y(maxY) + 10)
+        .attr("y", y(maxY) + 14)
         .text("Mitja: " + fN(mitja))
         .style("font-size", "13px")
 
