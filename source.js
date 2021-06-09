@@ -1,36 +1,43 @@
 let vars = [
     {
         name: 'Salari',
+        id: 'salari',
         desc: 'Informació sobre els salaris dels participants. Convertits a dólars americans (USD).',
         vars: [ 'ConvertedSalary' ]
     },
     {
         name: 'Vocació',
+        id: 'vocacio',
         desc: 'Vocacíó respecte al món del desenvoulapment dels participants.',
         vars: [ 'Hobby', 'OpenSource' ]
     },
     {
         name: 'Empresa',
+        id: 'empresa',
         desc: "Dades relacionades amb l'empresa o organització en què els participants contribueixen.",
         vars: [ 'Employment', 'CompanySize', 'DevType' ]
     },
     {
         name: 'Educació',
+        id: 'educacio',
         desc: "Nivell d'estudis i situació actual d'estudis dels participants.",
         vars: [ 'FormalEducation', 'Student', 'EducationTypes', 'SelfTaughtTypes']
     },
     {
         name: 'Perfil',
+        id: 'perfil',
         desc: "Perfil, rol i experiència dels participants.",
         vars: [ 'YearsCoding', 'YearsCodingProf', 'Gender', 'RaceEthnicity', 'EducationParents', 'Age', 'Dependents']
     },
     {
         name: 'Projecció',
+        id: 'projeccio',
         desc: "Projecció professional i expectatives dels participants.",
         vars: [ 'JobSatisfaction', 'CareerSatisfaction', 'HopeFiveYears', 'JobSearchStatus', 'LastNewJob']
     },
     {
         name: 'Plataformes, eines, frameworks,..',
+        id: 'plataformes',
         desc: "Plataformes de treball, sistemes, eines i frameworks més habituals entre els participants.",
         vars: [ 'LanguageWorkedWith', 'LanguageDesireNextYear', 'DatabaseWorkedWith', 'DatabaseDesireNextYear',
                     'PlatformWorkedWith', 'PlatformDesireNextYear', 'FrameworkWorkedWith', 'FrameworkDesireNextYear',
@@ -38,6 +45,7 @@ let vars = [
     },
     {
         name: 'Conciliació i salut',
+        id: 'conciliacio',
         desc: "Aspectes relacionats amb la compaginació de la vida laboral i la personal, la salut i el lleure dels participants.",
         vars: [ 'WakeTime', 'HoursComputer', 'HoursOutside', 'SkipMeals', 'ErgonomicDevices', 'Exercise']
     }
@@ -307,7 +315,7 @@ function drawMap() {
 
 d3.queue()
     .defer(d3.json, "https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson")
-    .defer(d3.csv, "https://raw.githubusercontent.com/gikajavi/stackoverflow-survey-2018/main/ds_cleaned.csv", function(d) {
+    .defer(d3.csv, "https://raw.githubusercontent.com/gikajavi/stackoverflow-survey-2018/main/ds_cleaned-min.csv", function(d) {
         dataset.push(d);
     })
     .await(ready);
@@ -355,7 +363,17 @@ function ready(error, Topo) {
     // Dibuixar mapa i gràfiques
     drawMap();
     drawCharts();
+    drawNav()
 }
+
+function drawNav() {
+    let ht = '<div class="nav_filtres"><a href="#filtres">Filtres</a></div>';
+    vars.forEach(group => {
+        ht += `<div id="nav_${group.id}"><a href="#${group.id}">${group.name}</a></div>`;
+    });
+    document.getElementById('navigation').innerHTML = ht;
+}
+
 
 
 function drawCharts() {
@@ -373,7 +391,7 @@ function drawCharts() {
         vars.forEach(group => {
 
             d3.select("#charts").append('div').attr('class', 'col-12 mt-8x mb-6x')
-                        .html( `<h1>${group.name}</h1><p>${group.desc}</p>` );
+                        .html( `<a name="${group.id}"></a><h1>${group.name}</h1><p>${group.desc}</p>` );
 
             group.vars.forEach(varName => {
                 countries.forEach(country => {
