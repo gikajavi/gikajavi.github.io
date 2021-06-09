@@ -242,7 +242,7 @@ p {
 
 h1 {
     font-weight: bold;
-    font-size: 32px;
+    font-size: 38px;
 }
 
 #loading-charts, #loading-map {
@@ -260,4 +260,13 @@ h1 {
 
 #map-container, #altres-filtres {
     display: none;
+}
+
+svg {
+    overflow: visible;
+}
+
+.map-container svg {
+    overflow: hidden;
+    margin-top: -15px;
 }

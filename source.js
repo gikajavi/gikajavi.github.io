@@ -43,6 +43,9 @@ let vars = [
     }
 ]
 
+let continuousVars = ['ConvertedSalary'];
+let verticalBars = ['FormalEducation', 'Hobby', 'OpenSource', 'DevType', 'EducationTypes', 'SelfTaughtTypes', 'RaceEthnicity', 'EducationParents',
+                        'Dependents', 'HopeFiveYears', 'JobSearchStatus', 'Methodology', 'VersionControl']
 
 trans = {
     ConvertedSalary: 'Salari (USD)',
@@ -55,8 +58,10 @@ trans = {
     FrameworkWorkedWith: 'Frameworks coneguts',
     FrameworkDesireNextYear: 'Frameworks desitjats',
     DevType: 'Rols',
-    CompanySize: 'Tamany empresa / organització',
-    FormalEducation: 'Nivell educatiu'
+    CompanySize: 'Tamany organització',
+    FormalEducation: 'Nivell educatiu',
+    OpenSource: 'Participa en Open Source',
+    Employment: 'Modalitat feina'
 }
 
 const colors = ['#222f3e', '#2e86de', '#8395a7', '#0abde3', '#01a3a4', '#182C61'
@@ -103,7 +108,7 @@ var svg = null;
 // Map and projection
 var path = d3.geoPath();
 var projection = d3.geoCylindricalStereographic()
-    .scale(140);
+    .scale(160);
 
 
 // Totes les dades (netejades prèviament)
@@ -339,8 +344,6 @@ function drawCharts() {
             countries.push('Món')
         }
 
-        let continuousVars = ['ConvertedSalary'];
-
         vars.forEach(group => {
 
             d3.select("#charts").append('div').attr('class', 'col-12 mt-8x mb-6x')
@@ -353,13 +356,18 @@ function drawCharts() {
                         filters.Country = country;
                     }
                     let mode = continuousVars.includes(varName) ? 'continuous' : 'categorical';
+                    let chartType = mode;
+                    if (verticalBars.includes(varName)) {
+                        chartType = 'vcategorical';
+                    }
+
                     if (getGenreMode() == 'compare') {
                         let tCountry = '';
                         country == 'Món' ? tCountry = '<i class="fas fa-globe-americas"></i>' : tCountry = ` <b class="ml-2x">${country}</b>`;
                         title = titleTpl(trVar(varName), '<i class="fas fa-female"></i>', tCountry)
-                        plot( getData4Chart(varName, { Gender: 'Female', ...filters }, mode), title, mode )
+                        plot( getData4Chart(varName, { Gender: 'Female', ...filters }, mode), title, chartType )
                         title = titleTpl(trVar(varName), '<i class="fas fa-male"></i>', tCountry)
-                        plot( getData4Chart(varName, { Gender: 'Male', ...filters }, mode), title, mode )
+                        plot( getData4Chart(varName, { Gender: 'Male', ...filters }, mode), title, chartType )
                     } else {
                         let tGender = '';
                         if (getGenreMode() == 'male') {
@@ -374,7 +382,7 @@ function drawCharts() {
                         country == 'Món' ? tCountry = '<i class="fas fa-globe-americas"></i>' : tCountry = ` <b class="ml-2x">${country}</b>`;
                         title = titleTpl(trVar(varName), tGender, tCountry)
 
-                        plot( getData4Chart(varName, filters, mode), title, mode )
+                        plot( getData4Chart(varName, filters, mode), title, chartType )
                     }
                 })
             });
@@ -462,7 +470,11 @@ function plot(data, title, mode) {
     if (mode === 'continuous') {
         histogramChart(data, title);
     } else {
-        hbarsChart(data, title);
+        if (mode == 'vcategorical') {
+            vbarsChart(data, title);
+        } else {
+            hbarsChart(data, title);
+        }
     }
 }
 
@@ -604,5 +616,67 @@ function hbarsChart(data, title) {
             .attr("height", y.bandwidth() )
             .attr("fill", randomColor())
             .style('opacity', '0.6')
+
+}
+
+
+function vbarsChart(data, title) {
+    data.sort(function (a, b) {
+        return a.value > b.value ? -1 : 1;
+    })
+
+    let maxConceptLength = 0;
+    data.forEach(ele => {
+        if (ele.concept.length > maxConceptLength) {
+            maxConceptLength = ele.concept.length
+        }
+    })
+
+
+    var margin = {top: 20, right: 30, bottom: 40 + maxConceptLength * 4, left: 20},
+        width = 494 - margin.left - margin.right,
+        height = (360 + maxConceptLength * 4) - margin.top - margin.bottom;
+
+    const newId = 'chart-' + makeid(8);
+    d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6 p-4x');
+    d3.select("#" + newId).html( title )
+
+    var svg = d3.select("#" + newId)
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+        // X axis
+        var x = d3.scaleBand()
+            .range([ 0, width ])
+            .domain(data.map(function(d) { return d.concept; }))
+            .padding(0.2);
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            .attr("transform", "translate(-10,0)rotate(-45)")
+            .style("text-anchor", "end");
+
+        // Add Y axis
+        var y = d3.scaleLinear()
+            .domain([0, d3.max(data.map(d => d.value)) ])
+            .range([ height, 0]);
+        svg.append("g")
+            .call(d3.axisLeft(y));
+
+        // Bars
+        svg.selectAll("mybar")
+            .data(data)
+            .enter()
+            .append("rect")
+            .attr("x", function(d) { return x(d.concept); })
+            .attr("y", function(d) { return y(d.value); })
+            .attr("width", x.bandwidth())
+            .attr("height", function(d) { return height - y(d.value); })
+            .attr("fill", "#69b3a2")
 
 }
