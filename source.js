@@ -6,6 +6,17 @@ function fN(n) {
         .replace(";", ".")
 }
 
+function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+        result += characters.charAt(Math.floor(Math.random() *
+            charactersLength));
+    }
+    return result;
+}
+
 
 // Tooltip hover mapa
 var div = d3
@@ -57,7 +68,8 @@ let countryExistInSurvey = function(mapName) {
 let deleteCountry = pais => {
     selectedCountries = selectedCountries.filter(c => c !== pais)
     updateCountriesList();
-    drawMap()
+    drawMap();
+    drawCharts();
 }
 
 function updateCountriesList() {
@@ -238,18 +250,19 @@ function ready(error, Topo) {
 function drawCharts() {
     document.getElementById('charts').innerHTML = '';
 
-    // console.log(selectedCountries)
-    drawChart('LanguageWorkedWith');
-    drawChart('LanguageDesireNextYear');
-    drawChart('DatabaseWorkedWith');
-    drawChart('DatabaseDesireNextYear');
-    drawChart('PlatformWorkedWith');
-    drawChart('PlatformDesireNextYear');
-    drawChart('FrameworkWorkedWith');
-    drawChart('FrameworkDesireNextYear');
-    drawChart('DevType');
-    drawChart('CompanySize');
-    drawChart('FormalEducation');
+    histogramChart('ConvertedSalary');
+    hbarsChart('LanguageWorkedWith');
+    hbarsChart('LanguageDesireNextYear');
+    hbarsChart('DatabaseWorkedWith');
+    hbarsChart('DatabaseDesireNextYear');
+    hbarsChart('PlatformWorkedWith');
+    hbarsChart('PlatformDesireNextYear');
+    hbarsChart('FrameworkWorkedWith');
+    hbarsChart('FrameworkDesireNextYear');
+    hbarsChart('IDE');
+    hbarsChart('DevType');
+    hbarsChart('CompanySize');
+    hbarsChart('FormalEducation');
 }
 
 
@@ -278,13 +291,193 @@ function getData4Chart(varName) {
 
     let l = [];
     Object.keys(d).forEach(k => {
-        l.push( { concept: k, value: Math.round(d[k] / total * 1000)/10} );
+        l.push( { concept: k.replace(/\(.*\)/, ''), value: Math.round(d[k] / total * 1000)/10} );
+    })
+    return l;
+}
+
+function getContinuousVar4Chart(varName) {
+    let l = [];
+    dataset.forEach(ele => {
+        // Possibles filtres
+        if (selectedCountries.length > 0) {
+            if (!selectedCountries.includes(ele.Country)) {
+                return;
+            }
+        }
+
+        const v = ele[varName];
+        if (v !== 'NA') {
+            l.push(parseFloat(v));
+        }
     })
     return l;
 }
 
 
-function drawChart(varName) {
+
+function histogramChart(varName) {
+    let data = getContinuousVar4Chart(varName);
+
+    var margin = {top: 10, right: 30, bottom: 30, left: 40},
+        width = 460 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    const newId = 'chart-' + makeid(8);
+    d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6');
+    d3.select("#" + newId).html(`<div style="font-weight: bold; text-align: center;">${varName}</div>`)
+
+    var svg = d3.select("#" + newId)
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+    // X axis: scale and draw:
+    var x = d3.scaleLinear()
+        .domain([0, d3.max(data, function(d) { return + d })])     // can use this instead of 1000 to have the max of data: d3.max(data, function(d) { return +d.price })
+        .range([0, width]);
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+
+    // set the parameters for the histogram
+    var histogram = d3.histogram()
+        .value(function(d) { return d; })   // I need to give the vector of value
+        .domain(x.domain())  // then the domain of the graphic
+        .thresholds(x.ticks(20)); // then the numbers of bins
+
+    // And apply this function to data to get the bins
+    var bins = histogram(data);
+
+    // Y axis: scale and draw:
+    var y = d3.scaleLinear()
+        .range([height, 0]);
+    y.domain([0, d3.max(bins, function(d) { return d.length; })]);   // d3.hist has to be called before the Y axis obviously
+    svg.append("g")
+        .call(d3.axisLeft(y));
+
+    // append the bar rectangles to the svg element
+    svg.selectAll("rect")
+        .data(bins)
+        .enter()
+        .append("rect")
+        .attr("x", 1)
+        .attr("transform", function(d) { return "translate(" + x(d.x0) + "," + y(d.length) + ")"; })
+        .attr("width", function(d) { return x(d.x1) - x(d.x0) -1 ; })
+        .attr("height", function(d) { return height - y(d.length); })
+        .style("fill", "#69b3a2")
+
+
+    let mitja = d3.mean(data);
+    var maxY = d3.max(bins.map(bin => bin.length));
+
+    svg
+        .append("line")
+        .attr("x1", x(mitja) )
+        .attr("x2", x(mitja) )
+        .attr("y1", y(0))
+        .attr("y2", y(maxY))
+        .attr("stroke", "red")
+        .style('stroke-width', "2")
+        // .attr("stroke-dasharray", "4")
+    svg
+        .append("text")
+        .attr("x", x(mitja) + 10)
+        .attr("y", y(maxY) + 10)
+        .text("Mitja: " + fN(mitja))
+        .style("font-size", "13px")
+
+
+}
+
+
+
+
+function densityChart(varName) {
+    let data = getContinuousVar4Chart(varName);
+
+    var margin = {top: 30, right: 30, bottom: 30, left: 50},
+        width = 460 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+
+    const newId = 'chart-' + makeid(8);
+    d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6');
+    d3.select("#" + newId).html(`<div style="font-weight: bold; text-align: center;">${varName}</div>`)
+
+    var svg = d3.select("#" + newId)
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+
+        // add the x Axis
+        var x = d3.scaleLinear()
+            .domain([0, d3.max(data.map(d => d)) + 1000])
+            // .domain([0, 1000])
+            .range([0, width]);
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+
+        // add the y Axis
+        var y = d3.scaleLinear()
+            .range([height, 0])
+            .domain([0, 0.0005]);
+        svg.append("g")
+            .call(d3.axisLeft(y));
+
+        // Compute kernel density estimation
+        var kde = kernelDensityEstimator(kernelEpanechnikov(7), x.ticks(40))
+        var density = kde(data.map(function (d) {
+            return d;
+        }))
+
+        // Plot the area
+        svg.append("path")
+            .attr("class", "mypath")
+            .datum(density)
+            .attr("fill", "#69b3a2")
+            .attr("opacity", ".8")
+            .attr("stroke", "#000")
+            .attr("stroke-width", 1)
+            .attr("stroke-linejoin", "round")
+            .attr("d", d3.line()
+                .curve(d3.curveBasis)
+                .x(function (d) {
+                    return x(d[0]);
+                })
+                .y(function (d) {
+                    return y(d[1]);
+                })
+            );
+
+
+
+    // Function to compute density
+    function kernelDensityEstimator(kernel, X) {
+        return function(V) {
+            return X.map(function(x) {
+                return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+            });
+        };
+    }
+    function kernelEpanechnikov(k) {
+        return function(v) {
+            return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+        };
+    }
+
+}
+
+
+
+
+function hbarsChart(varName) {
     let data = getData4Chart(varName);
     data.sort(function (a, b) {
         return a.value > b.value ? -1 : 1;
@@ -292,7 +485,6 @@ function drawChart(varName) {
 
     // MOstrem fins a 15 conceptes
     data.splice(15);
-
 
     // set the dimensions and margins of the graph
     let maxConceptLength = 0;
@@ -307,8 +499,11 @@ function drawChart(varName) {
         width = 510 - margin.left - margin.right,
         height = 360 - margin.top - margin.bottom;
 
-// append the svg object to the body of the page
-    var svg = d3.select("#charts")
+    const newId = 'chart-' + makeid(8);
+    d3.select("#charts").append('div').attr('id', newId).attr('class', 'col-6');
+    d3.select("#" + newId).html(`<div style="font-weight: bold; text-align: center;">${varName}</div>`)
+
+    var svg = d3.select("#" + newId)
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
