@@ -18,6 +18,12 @@
     <div class="container">
         <div class="row" style="width: 100%;">
             <div class="col-12 mb-8x">
+                <div class="fa-4x" id="loading-map">
+                    <i class="fas fa-spinner fa-pulse"></i>
+                    <p>Descarregant dataset</p>
+                    <p>Un moment, si us plau!</p>
+                </div>
+
                 <div class="map-container" id="map-container" >
                 </div>
                 <div class="row" id="paisos-seleccionats-wrapper" style="display: none;">
@@ -28,7 +34,7 @@
                 </div>
             </div>
 
-            <div class="col-12 row mb-10x altres-filtres">
+            <div class="col-12 row mb-10x altres-filtres" id="altres-filtres">
                 <div class="genre-button selected" data-mode="all">
                     <i class="fas fa-restroom"></i>
                     Tothom
@@ -48,7 +54,9 @@
             </div>
 
             <div class="col-12">
-                <!-- Zona per les gràfiques -->
+                <div class="fa-5x" id="loading-charts">
+                    <i class="fas fa-spinner fa-pulse"></i>
+                </div>
                 <div id="charts" class="row"></div>
             </div>
 

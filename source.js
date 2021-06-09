@@ -1,3 +1,49 @@
+let vars = [
+    {
+        name: 'Salari',
+        desc: 'Informació sobre els salaris dels participants. Convertits a dólars americans (USD).',
+        vars: [ 'ConvertedSalary' ]
+    },
+    {
+        name: 'Vocació',
+        desc: 'Vocacíó respecte al món del desenvoulapment dels participants.',
+        vars: [ 'Hobby', 'OpenSource' ]
+    },
+    {
+        name: 'Empresa',
+        desc: "Dades relacionades amb l'empresa o organització en què els participants contribueixen.",
+        vars: [ 'Employment', 'CompanySize', 'DevType' ]
+    },
+    {
+        name: 'Educació',
+        desc: "Nivell d'estudis i situació actual d'estudis dels participants.",
+        vars: [ 'FormalEducation', 'Student', 'EducationTypes', 'SelfTaughtTypes']
+    },
+    {
+        name: 'Perfil',
+        desc: "Perfil, rol i experiència dels participants.",
+        vars: [ 'YearsCoding', 'YearsCodingProf', 'Gender', 'RaceEthnicity', 'EducationParents', 'Age', 'Dependents']
+    },
+    {
+        name: 'Projecció',
+        desc: "Projecció professional i expectatives dels participants.",
+        vars: [ 'JobSatisfaction', 'CareerSatisfaction', 'HopeFiveYears', 'JobSearchStatus', 'LastNewJob']
+    },
+    {
+        name: 'Plataformes, eines, frameworks,..',
+        desc: "Plataformes de treball, sistemes, eines i frameworks més habituals entre els participants.",
+        vars: [ 'LanguageWorkedWith', 'LanguageDesireNextYear', 'DatabaseWorkedWith', 'DatabaseDesireNextYear',
+                    'PlatformWorkedWith', 'PlatformDesireNextYear', 'FrameworkWorkedWith', 'FrameworkDesireNextYear',
+                    'IDE', 'OperatingSystem', 'NumberMonitors', 'Methodology', 'VersionControl', 'CommunicationTools' ]
+    },
+    {
+        name: 'Conciliació i salut',
+        desc: "Aspectes relacionats amb la compaginació de la vida laboral i la personal, la salut i el lleure dels participants.",
+        vars: [ 'WakeTime', 'HoursComputer', 'HoursOutside', 'SkipMeals', 'ErgonomicDevices', 'Exercise']
+    }
+]
+
+
 trans = {
     ConvertedSalary: 'Salari (USD)',
     LanguageWorkedWith: 'Llenguatges coneguts',
@@ -225,10 +271,6 @@ function drawMap() {
         .on("click", mouseClick)
 }
 
-
-
-
-
 // Load external data and boot
 // console.log('queue start');
 
@@ -274,6 +316,11 @@ function ready(error, Topo) {
             drawCharts();
         });
 
+
+    document.getElementById('loading-map').style.display = 'none';
+    document.getElementById('map-container').style.display = 'block';
+    document.getElementById('altres-filtres').style.display = 'block';
+
     // Dibuixar mapa i gràfiques
     drawMap();
     drawCharts();
@@ -282,49 +329,61 @@ function ready(error, Topo) {
 
 function drawCharts() {
     document.getElementById('charts').innerHTML = '';
+    document.getElementById('loading-charts').style.display = 'block';
 
-    let countries = JSON.parse(JSON.stringify(selectedCountries));
-    if (countries.length == 0) {
-        countries.push('Món')
-    }
 
-    let vars = ['ConvertedSalary', 'LanguageWorkedWith', 'LanguageDesireNextYear', 'DatabaseWorkedWith', 'DatabaseDesireNextYear',
-                            'PlatformWorkedWith', 'PlatformDesireNextYear', 'FrameworkWorkedWith', 'FrameworkDesireNextYear',
-                            'IDE', 'DevType', 'CompanySize', 'FormalEducation'];
-    let continuousVars = ['ConvertedSalary'];
+    setTimeout(function() {
 
-    vars.forEach(varName => {
-        countries.forEach(country => {
-            let filters = {}
-            if (country !== 'Món') {
-                filters.Country = country;
-            }
-            let mode = continuousVars.includes(varName) ? 'continuous' : 'categorical';
-            if (getGenreMode() == 'compare') {
-                let tCountry = '';
-                country == 'Món' ? tCountry = '<i class="fas fa-globe-americas"></i>' : tCountry = ` <b class="ml-2x">${country}</b>`;
-                title = titleTpl(trVar(varName), '<i class="fas fa-female"></i>', tCountry)
-                plot( getData4Chart(varName, { Gender: 'Female', ...filters }, mode), title, mode )
-                title = titleTpl(trVar(varName), '<i class="fas fa-male"></i>', tCountry)
-                plot( getData4Chart(varName, { Gender: 'Male', ...filters }, mode), title, mode )
-            } else {
-                let tGender = '';
-                if (getGenreMode() == 'male') {
-                    tGender = '<i class="fas fa-male"></i>';
-                    filters.Gender = 'Male';
-                }
-                if (getGenreMode() == 'female') {
-                    tGender = '<i class="fas fa-female"></i>';
-                    filters.Gender = 'Female';
-                }
-                let tCountry = '';
-                country == 'Món' ? tCountry = '<i class="fas fa-globe-americas"></i>' : tCountry = ` <b class="ml-2x">${country}</b>`;
-                title = titleTpl(trVar(varName), tGender, tCountry)
+        let countries = JSON.parse(JSON.stringify(selectedCountries));
+        if (countries.length == 0) {
+            countries.push('Món')
+        }
 
-                plot( getData4Chart(varName, filters, mode), title, mode )
-            }
+        let continuousVars = ['ConvertedSalary'];
+
+        vars.forEach(group => {
+
+            d3.select("#charts").append('div').attr('class', 'col-12 mt-8x mb-6x')
+                        .html( `<h1>${group.name}</h1><p>${group.desc}</p>` );
+
+            group.vars.forEach(varName => {
+                countries.forEach(country => {
+                    let filters = {}
+                    if (country !== 'Món') {
+                        filters.Country = country;
+                    }
+                    let mode = continuousVars.includes(varName) ? 'continuous' : 'categorical';
+                    if (getGenreMode() == 'compare') {
+                        let tCountry = '';
+                        country == 'Món' ? tCountry = '<i class="fas fa-globe-americas"></i>' : tCountry = ` <b class="ml-2x">${country}</b>`;
+                        title = titleTpl(trVar(varName), '<i class="fas fa-female"></i>', tCountry)
+                        plot( getData4Chart(varName, { Gender: 'Female', ...filters }, mode), title, mode )
+                        title = titleTpl(trVar(varName), '<i class="fas fa-male"></i>', tCountry)
+                        plot( getData4Chart(varName, { Gender: 'Male', ...filters }, mode), title, mode )
+                    } else {
+                        let tGender = '';
+                        if (getGenreMode() == 'male') {
+                            tGender = '<i class="fas fa-male"></i>';
+                            filters.Gender = 'Male';
+                        }
+                        if (getGenreMode() == 'female') {
+                            tGender = '<i class="fas fa-female"></i>';
+                            filters.Gender = 'Female';
+                        }
+                        let tCountry = '';
+                        country == 'Món' ? tCountry = '<i class="fas fa-globe-americas"></i>' : tCountry = ` <b class="ml-2x">${country}</b>`;
+                        title = titleTpl(trVar(varName), tGender, tCountry)
+
+                        plot( getData4Chart(varName, filters, mode), title, mode )
+                    }
+                })
+            });
         })
-    });
+    }, 0)
+
+    setTimeout(function () { document.getElementById('loading-charts').style.display = 'none'; }, 0)
+
+
 }
 
 function titleTpl(varName, tGender, tCountry) {
