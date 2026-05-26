@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body { background:#f5f5f5; }
+
+.row-field {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.label {
+    width: 90px;
+    font-size: 0.9rem;
+}
+
+.display-box {
+    flex: 1;
+    font-size: 1.4rem;
+    text-align: right;
+    padding: 10px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+}
+
+.money-btn {
+    font-size: 0.9rem;
+    padding: 10px 5px;
+}
+
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.key {
+    font-size: 1.5rem;
+    padding: 15px;
+}
+
+.resumen {
+    font-size: 0.9rem;
+    margin-top: 10px;
+    background: white;
+    padding: 8px;
+    border-radius: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container py-2">
+
+    <!-- TOTAL -->
+    <div class="row-field">
+        <div class="label">Total</div>
+        <input type="text" id="total" class="form-control display-box" value="0" readonly onclick="abrirTeclado('total')">
+    </div>
+
+    <!-- EFECTIVO -->
+    <div class="row-field">
+        <div class="label">Efectivo</div>
+        <input type="text" id="efectivo" class="form-control display-box" value="0" readonly onclick="abrirTeclado('efectivo')">
+    </div>
+
+    <!-- CAMBIO -->
+    <div class="row-field">
+        <div class="label">Cambio</div>
+        <input type="text" id="cambio" class="form-control display-box" readonly>
+    </div>
+
+    <button class="btn btn-dark w-100 mb-2" onclick="reset()">Iniciar</button>
+
+	<!-- MONEDAS + BILLETES -->
+	<div style="margin-top: 10px;"><h4>Billetes</h4></div>
+    
+    <div class="grid">
+
+		
+        <button class="btn btn-success money-btn" onclick="accion(5)">+5</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-5)">-5</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(10)">+10</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-10)">-10</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(20)">+20</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-20)">-20</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(50)">+50</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-50)">-50</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(100)">+100</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-100)">-100</button>	
+	</div>
+	<div style="margin-top: 20px;"><h4>Monedas</h4></div>
+	<div class="grid">
+			
+		
+        <!-- céntimos -->
+        <button class="btn btn-success money-btn" onclick="accion(0.01)">+0.01</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-0.01)">-0.01</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(0.02)">+0.02</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-0.02)">-0.02</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(0.05)">+0.05</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-0.05)">-0.05</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(0.10)">+0.10</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-0.10)">-0.10</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(0.20)">+0.20</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-0.20)">-0.20</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(0.50)">+0.50</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-0.50)">-0.50</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(1)">+1€</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-1)">-1€</button>
+
+        <button class="btn btn-success money-btn" onclick="accion(2)">+2€</button>
+        <button class="btn btn-danger money-btn" onclick="accion(-2)">-2€</button>
+
+
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="resumen" id="resumen"></div>
+
+</div>
+
+<!-- TECLADO -->
+<div class="modal fade" id="tecladoModal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content p-3">
+
+        <input type="text" id="displayTeclado" class="form-control display-box mb-3" readonly>
+
+        <div class="keypad">
+            <button class="btn btn-light key" onclick="tecla('7')">7</button>
+            <button class="btn btn-light key" onclick="tecla('8')">8</button>
+            <button class="btn btn-light key" onclick="tecla('9')">9</button>
+
+            <button class="btn btn-light key" onclick="tecla('4')">4</button>
+            <button class="btn btn-light key" onclick="tecla('5')">5</button>
+            <button class="btn btn-light key" onclick="tecla('6')">6</button>
+
+            <button class="btn btn-light key" onclick="tecla('1')">1</button>
+            <button class="btn btn-light key" onclick="tecla('2')">2</button>
+            <button class="btn btn-light key" onclick="tecla('3')">3</button>
+
+            <button class="btn btn-light key" onclick="tecla(',')">,</button>
+            <button class="btn btn-light key" onclick="tecla('0')">0</button>
+            <button class="btn btn-warning key" onclick="borrar()">←</button>
+        </div>
+
+        <div class="d-flex mt-3 gap-2">
+            <button class="btn btn-success w-100" onclick="aplicar()">Aplicar</button>
+            <button class="btn btn-secondary w-100" onclick="cerrar()">Cancelar</button>
+        </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+let modal = new bootstrap.Modal(document.getElementById('tecladoModal'));
+let campoActivo = "total";
+let conteo = {};
+
+function abrirTeclado(campo) {
+    campoActivo = campo;
+    let val = document.getElementById(campo).value;
+
+    if (parseFloat(val) === 0) displayTeclado.value = "";
+    else displayTeclado.value = val.replace('.', ',');
+
+    modal.show();
+}
+
+function tecla(v) {
+    if (v === ',' && displayTeclado.value.includes(',')) return;
+    displayTeclado.value += v;
+}
+
+function borrar() {
+    displayTeclado.value = displayTeclado.value.slice(0, -1);
+}
+
+function aplicar() {
+    let v = displayTeclado.value.replace(',', '.');
+    if (v === "" || v === ",") v = "0";
+
+    document.getElementById(campoActivo).value = parseFloat(v).toFixed(2);
+
+    modal.hide();
+    calcularCambio();
+}
+
+function cerrar() { modal.hide(); }
+
+function vibrar() {
+    if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function accion(valor) {
+    vibrar();
+
+    let e = parseFloat(efectivo.value) || 0;
+    e += valor;
+    if (e < 0) e = 0;
+    efectivo.value = e.toFixed(2);
+
+    let key = Math.abs(valor).toFixed(2);
+    conteo[key] = (conteo[key] || 0) + (valor > 0 ? 1 : -1);
+    if (conteo[key] <= 0) delete conteo[key];
+
+    actualizarResumen();
+    calcularCambio();
+}
+
+function actualizarResumen() {
+    let txt = "";
+
+    for (let k in conteo) {
+        let tipo = (k >= 5) ? "Billete" : "Moneda";
+        txt += `${tipo} ${k}€ x ${conteo[k]}<br>`;
+    }
+
+    resumen.innerHTML = txt || "Sin efectivo introducido";
+}
+
+function calcularCambio() {
+    let t = parseFloat(total.value) || 0;
+    let e = parseFloat(efectivo.value) || 0;
+    let cVal = e - t;
+
+    cambio.value = cVal.toFixed(2);
+
+    if (cVal === 0) cambio.style.background = "#ccc";
+    else if (cVal > 0) cambio.style.background = "#28a745";
+    else cambio.style.background = "#dc3545";
+}
+
+function reset() {
+    total.value = 0;
+    efectivo.value = 0;
+    cambio.value = 0;
+    conteo = {};
+    resumen.innerHTML = "";
+}
+
+</script>
+
+</body>
+</html>
